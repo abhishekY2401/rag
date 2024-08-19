@@ -1,0 +1,10 @@
+supabase
+flask
+python-dotenv
+boto3
+flask_cors
+sentence-transformers
+PyMuPDF
+numpy
+requests
+llama-index
