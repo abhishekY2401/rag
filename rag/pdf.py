@@ -108,8 +108,9 @@ def process_pdf():
             data = {
                 "filename": file.filename,
                 "document_url": s3_url,
-                "embedding": json.dumps(embedding.tolist())
+                "embedding": json.dumps(list(embedding))
             }
+            print(data)
             response = supabase.table('documents').insert(data).execute()
 
         return jsonify({'message': 'File uploaded successfully', 's3_url': s3_url, 'supabase_response': response.data}), 200
