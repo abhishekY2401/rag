@@ -1,6 +1,6 @@
 import os
 from langchain_community.embeddings import CohereEmbeddings
-from langchain_community.embeddings.huggingface import HuggingFaceEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 
 # Load the Sentence Transformer model
 # model = SentenceTransformer('distiluse-base-multilingual-cased-v2')
@@ -19,7 +19,7 @@ def get_embedding_model(embedding_model_name, model_kwargs, encode_kwargs):
             encode_kwargs=encode_kwargs
         )
 
-        return embedding_model
+    return embedding_model
 
 
 class EmbedChunks:
@@ -27,8 +27,8 @@ class EmbedChunks:
         # Embedding Model
         self.embedding_model = get_embedding_model(
             embedding_model_name=model_name,
-            model_kwargs={"device": "cuda"},
-            encode_kwargs={"device": "cuda", "batch_size": 500}
+            model_kwargs={"device": "cpu"},
+            encode_kwargs={"device": "cpu", "batch_size": 500}
         )
 
     def __call__(self, batch):
