@@ -6,7 +6,7 @@ import time
 
 def response_stream(chat):
     for chunk in chat:
-        content = chunk.choices[0].delta.content
+        content = chunk.text
         if content is not None:
             yield content
 
@@ -15,7 +15,7 @@ def prepare_response(chat, stream):
     if stream:
         return response_stream(chat)
     else:
-        return chat.choices[0].message.content
+        return chat.text
 
 
 def send_request(
@@ -31,7 +31,7 @@ def send_request(
     client = get_client(llm=llm)
     while retry_count <= max_retries:
         try:
-            chat_completion = client.chat.completions.create(
+            chat_completion = client.chat_stream(
                 model=llm,
                 max_tokens=max_tokens,
                 temperature=temperature,
@@ -80,8 +80,8 @@ class QueryAgent:
         # Embedding Model
         self.embedding_model = get_embedding_model(
             embedding_model_name=embedding_model_name,
-            model_kwargs={"device": "cuda"},
-            encode_kwargs={"device": "cuda", "batch_size": 100},
+            model_kwargs={"device": "cpu"},
+            encode_kwargs={"device": "cpu", "batch_size": 100},
         )
 
         self.chunks = chunks
