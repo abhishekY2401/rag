@@ -37,7 +37,13 @@ def chatWithLLM():
 
     if len(messages) == 1:
         query = messages[0].get("content", '')
-        result = QueryAgent(
+        # instantiate the query agent
+        agent = QueryAgent(
+            embedding_model_name="embed-english-v3.0",
+            chunks=30,
+            llm="command-r"
+        )
+        result = agent(
             query=query,
             num_chunks=30,
             stream=False,
