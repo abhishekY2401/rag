@@ -3,7 +3,7 @@ import requests
 import os
 
 # DEFINE API ENDPOINTS
-FLASK_BACKEND_URL = "http://localhost:7000/rag"
+FLASK_BACKEND_URL = "https://rag-k377.onrender.com/rag"
 PDF_PROCESS_ENDPOINT = f"{FLASK_BACKEND_URL}/pdf/process"
 CHAT_ENDPOINT = f"{FLASK_BACKEND_URL}/chat"
 
