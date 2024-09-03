@@ -77,7 +77,7 @@ footer = """
     }
     </style>
     <div class="footer">
-        <p>Made with 🤍 and coffee ☕</p>
+        <p>Made with 🤍 and ☕</p>
     </div>
 """
 st.markdown(footer, unsafe_allow_html=True)
