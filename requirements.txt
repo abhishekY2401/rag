@@ -13,3 +13,4 @@ requests
 llama-index
 streamlit
 langchain-cohere
+langchain-huggingface

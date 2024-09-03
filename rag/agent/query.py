@@ -38,8 +38,11 @@ def send_request(
                 temperature=temperature,
                 message=message,
             )
-            # Ensure response is serializable
-            return chat_completion["text"]
+             # Access the `text` attribute directly if chat_completion is an object
+            if hasattr(chat_completion, 'text'):
+                return chat_completion.text
+            else:
+                raise ValueError("The chat completion object does not have a 'text' attribute.")
         except Exception as e:
             print(f"Exception: {e}")
             time.sleep(retry_interval)  # default is per-minute rate limits
