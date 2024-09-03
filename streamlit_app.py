@@ -63,3 +63,21 @@ if st.button("Send"):
                 st.write(response.json())
     else:
         st.warning("Please enter a message before sending.")
+
+footer = """
+    <style>
+    .footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        color: white;
+        text-align: center;
+        padding: 10px;
+    }
+    </style>
+    <div class="footer">
+        <p>Made with 🤍 and coffee ☕</p>
+    </div>
+"""
+st.markdown(footer, unsafe_allow_html=True)
