@@ -1,5 +1,6 @@
+from flask import jsonify
 from rag.embed import get_embedding_model
-from rag.search import semantic_search
+from rag.search import search_documents
 from rag.utils import get_client
 import time
 
@@ -20,7 +21,7 @@ def prepare_response(chat, stream):
 
 def send_request(
     llm,
-    messages,
+    message,
     max_tokens=None,
     temperature=0.0,
     stream=False,
@@ -31,27 +32,25 @@ def send_request(
     client = get_client(llm=llm)
     while retry_count <= max_retries:
         try:
-            chat_completion = client.chat_stream(
+            chat_completion = client.chat(
                 model=llm,
                 max_tokens=max_tokens,
                 temperature=temperature,
-                stream=stream,
-                messages=messages,
+                message=message,
             )
-            return prepare_response(chat_completion, stream=stream)
-
+            # Ensure response is serializable
+            return chat_completion["text"]
         except Exception as e:
             print(f"Exception: {e}")
             time.sleep(retry_interval)  # default is per-minute rate limits
             retry_count += 1
-    return ""
+    return "Failed to get response after multiple retries."
 
 
 def generate_response(
     llm,
     max_tokens=None,
     temperature=0.0,
-    stream=False,
     system_content="",
     assistant_content="",
     user_content="",
@@ -59,19 +58,8 @@ def generate_response(
     retry_interval=60,
 ):
     """Generate response from an LLM."""
-    messages = [
-        {"role": role, "content": content}
-        for role, content in [
-            ("system", system_content),
-            ("assistant", assistant_content),
-            ("user", user_content),
-        ]
-
-        if content
-    ]
-
     return send_request(
-        llm, messages, max_tokens, temperature, stream, max_retries, retry_interval
+        llm, user_content, max_tokens, temperature, stream=False, max_retries=max_retries, retry_interval=retry_interval
     )
 
 
@@ -83,49 +71,57 @@ class QueryAgent:
             model_kwargs={"device": "cpu"},
             encode_kwargs={"device": "cpu", "batch_size": 100},
         )
-
         self.chunks = chunks
 
         # LLM
         self.llm = llm
         self.temperature = temperature
-        self.context_length = int(
-            0.5 * max_context_length
-        )
-        self.max_tokens = int(
-            0.5 * max_context_length
-        )
+        self.context_length = int(0.5 * max_context_length)
+        self.max_tokens = int(0.5 * max_context_length)
         self.system_content = system_content
         self.assistant_content = assistant_content
 
     def __call__(self, query, num_chunks=5, stream=True):
-
-        # get top relevant context
-        context_results = semantic_search(
+        # Get top relevant context
+        context_results = search_documents(
             query=query, embedding_model=self.embedding_model, k=num_chunks
         )
 
-        # generate response
-        document_ids = [item["id"] for item in context_results]
+        # If no relevant context is found, handle gracefully
+        if not context_results:
+            return {
+                "question": query,
+                "sources": [],
+                "document_ids": [],
+                "answer": "No relevant context found for the given query.",
+                "llm": str(self.llm)  # Ensure llm is serializable
+            }
+
+        # Extract document IDs, text chunks, and sources from search results
+        document_ids = [str(item["_id"]) for item in context_results]
         context = [item["text"] for item in context_results]
-        sources = set([item["source"] for item in context_results])
+        sources = list(set(item["source"] for item in context_results))
+
+        # Prepare user content for the language model
         user_content = f"query: {query}, context: {context}"
+
+        # Generate a response using the language model
         answer = generate_response(
             llm=self.llm,
             max_tokens=self.max_tokens,
             temperature=self.temperature,
-            stream=stream,
             system_content=self.system_content,
             assistant_content=self.assistant_content,
             user_content=user_content,
         )
 
+        # Construct the result to return
         result = {
             "question": query,
             "sources": sources,
             "document_ids": document_ids,
             "answer": answer,
-            "llm": self.llms
+            "llm": str(self.llm)  # Ensure llm is serializable
         }
 
         return result

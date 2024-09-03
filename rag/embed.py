@@ -1,5 +1,5 @@
 import os
-from langchain_community.embeddings import CohereEmbeddings
+from langchain_cohere import CohereEmbeddings
 from langchain_huggingface import HuggingFaceEmbeddings
 
 # Load the Sentence Transformer model
@@ -10,7 +10,6 @@ def get_embedding_model(embedding_model_name, model_kwargs, encode_kwargs):
     if embedding_model_name == "embed-english-v3.0":
         embedding_model = CohereEmbeddings(
             model=embedding_model_name,
-            cohere_api_key=os.environ["COHERE_API_KEY"]
         )
     else:
         embedding_model = HuggingFaceEmbeddings(

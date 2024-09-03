@@ -15,10 +15,10 @@ def create_app():
     app.register_blueprint(chat, url_prefix='/rag')
     app.register_blueprint(pdf, url_prefix='/rag')
 
-    # Health check route
-    @app.route('/health', methods=['GET'])
-    def health_check():
-        return jsonify({"status": "Healthy"}), 200
+    # # Health check route
+    # @app.route('/health', methods=['GET'])
+    # def health_check():
+    #     return jsonify({"status": "Healthy"}), 200
 
     return app
 

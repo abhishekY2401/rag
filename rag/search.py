@@ -1,17 +1,27 @@
 import numpy as np
-from database.db import supabase
+from database.db import collection
 
 
-def semantic_search(query, embedding_model, k):
-    embedding = np.array(embedding_model.embed_query(query))
+def search_documents(query, embedding_model, k):
 
-    response = supabase.rpc('match_documents', {
-        'query_embedding': embedding,
-        'match_threshold': 0.78,
-        'match_count': 10
-    }).execute()
+    try:
+        embeddings = embedding_model.embed_query(query)
+        # Perform the vector search
+        pipeline = [
+            {
+                "$vectorSearch": {
+                    "queryVector": embeddings,
+                    "path": "embedding",
+                    "numCandidates": 100,
+                    "limit": k,
+                    "index": "default"
+                }
+            }
+        ]
 
-    semantic_context = [{"id": row[0], "text": row[1],
-                         "source": row[2]} for row in response]
+        results = list(collection.aggregate(pipeline))
 
-    return semantic_context
+        return results
+
+    except Exception as e:
+        print(f"An error occurred: {e}")

@@ -1,10 +1,13 @@
+from pymongo import MongoClient
 import os
-from supabase import create_client, Client
 from dotenv import load_dotenv
 
 load_dotenv()
 
-url = os.environ.get("SUPABASE_URL")
-key = os.environ.get("SUPABASE_KEY")
+mongo_uri = os.getenv("MONGO_URI")
+db_name = os.getenv("DB_NAME")
+collection_name = os.getenv("COLLECTION_NAME")
 
-supabase: Client = create_client(url, key)
+client = MongoClient(mongo_uri)
+db = client[db_name]
+collection = db[collection_name]

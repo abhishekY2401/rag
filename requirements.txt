@@ -1,4 +1,7 @@
-supabase
+# supabase
+
+# migration from supabase to mongodb
+pymongo
 flask
 python-dotenv
 boto3
@@ -8,3 +11,5 @@ PyMuPDF
 numpy
 requests
 llama-index
+streamlit
+langchain-cohere

@@ -1,4 +1,3 @@
-from database.db import supabase
 from flask import Blueprint, request, jsonify
 import os
 import boto3
@@ -10,6 +9,7 @@ from botocore.exceptions import NoCredentialsError
 import fitz  # PyMuPDF opener
 import json
 from rag.embed import EmbedChunks
+from database.db import collection
 
 load_dotenv()
 
@@ -103,17 +103,19 @@ def process_pdf():
         upload_file(file_path, S3_BUCKET)
         s3_url = f"https://{S3_BUCKET}.s3.{S3_REGION}.amazonaws.com/{file.filename}"
 
-        # Store embeddings in Supabase
+        # Store embeddings in MongoDB
         for chunk, embedding in zip(text_chunks, embeddings):
             data = {
                 "filename": file.filename,
                 "document_url": s3_url,
-                "embedding": json.dumps(list(embedding))
+                "embedding": list(embedding),
+                "text": chunk,
+                "source": file.filename
             }
             print(data)
-            response = supabase.table('documents').insert(data).execute()
+            collection.insert_one(data)
 
-        return jsonify({'message': 'File uploaded successfully', 's3_url': s3_url, 'supabase_response': response.data}), 200
+        return jsonify({'message': 'File uploaded successfully', 's3_url': s3_url}), 200
 
     except NoCredentialsError:
         return jsonify({'error': 'Credentials not available'}), 500
