@@ -2,7 +2,10 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from rag.chat import chat
 from rag.pdf import pdf
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 
 def create_app():
     app = Flask(__name__)
@@ -15,14 +18,10 @@ def create_app():
     app.register_blueprint(chat, url_prefix='/rag')
     app.register_blueprint(pdf, url_prefix='/rag')
 
-    # # Health check route
-    # @app.route('/health', methods=['GET'])
-    # def health_check():
-    #     return jsonify({"status": "Healthy"}), 200
-
     return app
 
 
 if __name__ == "__main__":
     app = create_app()
-    app.run(port=7000)
+    port = os.environ.get('port') | 9000
+    app.run(port)
